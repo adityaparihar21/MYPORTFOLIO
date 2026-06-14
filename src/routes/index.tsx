@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ChevronDown, Instagram, Youtube, Github, Linkedin, Mail, ArrowRight, Volume2, VolumeX } from "lucide-react";
+import { ChevronDown, Instagram, Youtube, Github, Linkedin, Mail, ArrowRight, Volume2, VolumeX, Menu, X } from "lucide-react";
+
 import { siteData } from "@/lib/site-data";
 import { useContent } from "@/lib/use-content";
 
@@ -41,6 +42,8 @@ const staggerParent = {
 /* ---------------- Header ---------------- */
 function Header({ data }: { data: ReturnType<typeof useContent> }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
     onScroll();
@@ -54,13 +57,13 @@ function Header({ data }: { data: ReturnType<typeof useContent> }) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled
+        scrolled || menuOpen
           ? "backdrop-blur-xl bg-background/75 border-b border-border"
           : "bg-transparent"
       }`}
     >
       <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-6 md:px-12">
-        <a href="#top" className="flex items-center gap-2">
+        <a href="#top" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
           <span className="font-serif text-2xl italic text-foreground">
             {data.brand.monogram}
           </span>
@@ -78,13 +81,37 @@ function Header({ data }: { data: ReturnType<typeof useContent> }) {
             </a>
           ))}
         </nav>
-        <a
-          href="#contact"
-          className="md:hidden text-[11px] font-medium tracking-[0.2em] uppercase text-primary"
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden text-foreground hover:text-primary transition-colors p-1"
+          aria-label="Toggle menu"
         >
-          Menu
-        </a>
+          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {menuOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+          className="md:hidden w-full bg-background/95 backdrop-blur-2xl border-t border-border overflow-hidden"
+        >
+          <nav className="flex flex-col px-6 py-8 gap-6">
+            {data.brand.nav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="text-lg font-serif font-light tracking-wide text-foreground/90 hover:text-primary transition-colors py-1"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </motion.div>
+      )}
     </motion.header>
   );
 }
@@ -710,14 +737,15 @@ function CallToAction({ data }: { data: ReturnType<typeof useContent> }) {
             variants={fadeUp}
             transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
             href={`mailto:${email}`}
-            className="mt-4 inline-flex items-center gap-3 bg-primary px-10 py-4 text-[11px] font-semibold tracking-[0.25em] uppercase text-primary-foreground transition-all hover:bg-primary/90 hover:gap-4"
+            className="mt-4 inline-flex max-w-full items-center gap-2 bg-primary px-4 py-3 md:px-10 md:py-4 text-[10px] md:text-[11px] font-semibold tracking-[0.12em] md:tracking-[0.25em] uppercase text-primary-foreground transition-all hover:bg-primary/90 hover:gap-4"
           >
             <Mail className="h-4 w-4" strokeWidth={1.75} />
-            {email}
+            <span className="truncate">{email}</span>
           </motion.a>
         </motion.div>
 
         <div className="flex flex-col gap-8 border-t border-border pt-12 md:flex-row md:items-end md:justify-between">
+
           <div className="flex flex-col gap-4">
             <span className="font-serif text-3xl italic text-foreground">
               {data.brand.monogram}
